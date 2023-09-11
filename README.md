@@ -4,7 +4,7 @@
 
 ## [Run a Mojo file](https://docs.modular.com/mojo/manual/get-started/hello-world.html#run-a-mojo-file)
 
-```
+```mojo
 mojo file_name.mojo
 ```
 
@@ -12,12 +12,12 @@ mojo file_name.mojo
 
 1.Create a statically-linked binary with the build command:
 
-```
+```mojo
 mojo build file_name.mojo
 ```
 
 2.Then run the executable:
 
-```
+```mojo
 /file_name
 ```
