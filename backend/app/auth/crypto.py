@@ -2,9 +2,10 @@
 import base64
 import hashlib
 import hmac
-from typing import Optional
+
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
+
 from backend.app.config import settings
 
 # Argon2id password hasher tuned for production security
@@ -13,12 +14,14 @@ ph = PasswordHasher(
     memory_cost=65536,  # 64 MB
     parallelism=1,
     hash_len=32,
-    salt_len=16
+    salt_len=16,
 )
+
 
 def hash_password(password: str) -> str:
     """Hashes a plaintext password using Argon2id."""
     return ph.hash(password)
+
 
 def verify_password(password: str, hashed: str) -> bool:
     """Verifies a plaintext password against an Argon2id hash."""
@@ -28,6 +31,7 @@ def verify_password(password: str, hashed: str) -> bool:
         return False
     except Exception:
         return False
+
 
 def sign_cookie_token(token: str) -> str:
     """
@@ -39,7 +43,8 @@ def sign_cookie_token(token: str) -> str:
     sig_b64 = base64.urlsafe_b64encode(sig).decode("utf-8").rstrip("=")
     return f"{token}.{sig_b64}"
 
-def unsign_cookie_token(cookie_val: str) -> Optional[str]:
+
+def unsign_cookie_token(cookie_val: str) -> str | None:
     """
     Validates the HMAC-SHA256 signature on an incoming session cookie.
     Returns the original token if signature matches, or None if tampered.

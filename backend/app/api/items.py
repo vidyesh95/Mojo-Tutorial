@@ -1,12 +1,13 @@
 # backend/app/api/items.py
-from datetime import datetime, timezone
 import os
-import sys
 import time
 import uuid
+from datetime import UTC, datetime
+
 import anyio
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
+
 from backend.app.auth.dependencies import CurrentUser
 from backend.app.db.pool import execute, fetch_all, fetch_one
 from backend.app.db.verifier import parse_queries
@@ -14,9 +15,12 @@ from backend.app.db.verifier import parse_queries
 router = APIRouter(prefix="/api", tags=["Domain Items & Mojo Compute"])
 
 # Load raw SQL queries from items.sql
-queries_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "db", "queries", "items.sql")
-with open(queries_path, "r", encoding="utf-8") as f:
+queries_path = os.path.join(
+    os.path.dirname(os.path.dirname(__file__)), "db", "queries", "items.sql"
+)
+with open(queries_path, encoding="utf-8") as f:
     ITEMS_SQL = parse_queries(f.read())
+
 
 class Item(BaseModel):
     id: str
@@ -25,12 +29,15 @@ class Item(BaseModel):
     payload_score: float
     created_at: str
 
+
 class CreateItemRequest(BaseModel):
     title: str = Field(min_length=1, max_length=200)
     initial_score: float = Field(default=1.0)
 
+
 class BatchScoreRequest(BaseModel):
     custom_features: list[float] = Field(default_factory=list)
+
 
 class BatchScoreResponse(BaseModel):
     processed_count: int
@@ -38,34 +45,38 @@ class BatchScoreResponse(BaseModel):
     execution_time_ms: float
     engine: str
 
+
 def run_mojo_simd_kernel(features: list[float]) -> list[float]:
     """Runs the compiled native Mojo SIMD batch scoring function."""
-    app_dir = os.path.dirname(os.path.dirname(__file__))
-    if app_dir not in sys.path:
-        sys.path.insert(0, app_dir)
-    import mojo_core
+    from backend.app import mojo_core
+
     return mojo_core.compute_batch_risk(features)
+
 
 @router.get("/items", response_model=list[Item])
 async def list_items(user: CurrentUser):
     """Lists all items belonging to the authenticated user via parameterized raw SQL."""
     return await fetch_all(ITEMS_SQL["list_user_items"], Item, (user.id,))
 
+
 @router.post("/items", response_model=Item, status_code=status.HTTP_201_CREATED)
 async def create_item(payload: CreateItemRequest, user: CurrentUser):
     """Creates a new item scoped to the authenticated user."""
     item_id = str(uuid.uuid4())
-    now_iso = datetime.now(timezone.utc).isoformat()
+    now_iso = datetime.now(UTC).isoformat()
 
     await execute(
-        ITEMS_SQL["create_item"],
-        (item_id, user.id, payload.title, payload.initial_score, now_iso)
+        ITEMS_SQL["create_item"], (item_id, user.id, payload.title, payload.initial_score, now_iso)
     )
 
     created = await fetch_one(ITEMS_SQL["get_item_by_id"], Item, (item_id,))
     if not created:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to retrieve created item")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve created item",
+        )
     return created
+
 
 @router.post("/compute/batch-score", response_model=BatchScoreResponse)
 async def batch_score(payload: BatchScoreRequest, user: CurrentUser):
@@ -93,5 +104,5 @@ async def batch_score(payload: BatchScoreRequest, user: CurrentUser):
         processed_count=len(scores),
         scores=scores,
         execution_time_ms=round(elapsed_ms, 3),
-        engine="mojo-1.2-simd"
+        engine="mojo-1.2-simd",
     )

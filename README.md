@@ -111,6 +111,16 @@ uv run python -m backend.app.db.verifier
 uv run pytest backend/tests/ -v
 ```
 
+### 4. Code Formatting & Static Type Checking
+```bash
+# Format and lint with Ruff
+uv run ruff format .
+uv run ruff check .
+
+# Fast static type checking with Pyrefly
+uv run pyrefly check
+```
+
 ---
 
 ## 🤝 Contributing & License

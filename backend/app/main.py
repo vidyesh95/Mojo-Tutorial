@@ -1,14 +1,17 @@
 # backend/app/main.py
-from contextlib import asynccontextmanager
 import os
 import subprocess
 import sys
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 from backend.app.api.health import router as health_router
 from backend.app.api.items import router as items_router
 from backend.app.auth.router import router as auth_router
 from backend.app.db.migrator import run_migrations
+
 
 def ensure_mojo_extension_compiled():
     """Ensures backend/app/mojo_core.so is compiled from backend/mojo_core/compute.mojo."""
@@ -23,13 +26,11 @@ def ensure_mojo_extension_compiled():
         if not os.path.exists(mojo_bin):
             mojo_bin = "mojo"
 
-        subprocess.run([
-            mojo_bin, "build",
-            "--emit", "shared-lib",
-            mojo_src,
-            "-o", so_dest
-        ], check=True)
+        subprocess.run(
+            [mojo_bin, "build", "--emit", "shared-lib", mojo_src, "-o", so_dest], check=True
+        )
         print("Mojo extension compiled successfully!")
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -40,11 +41,12 @@ async def lifespan(app: FastAPI):
     ensure_mojo_extension_compiled()
     yield
 
+
 app = FastAPI(
     title="Mojo + FastAPI Production Backend",
     description="Full-stack backend combining Systems Mojo SIMD computing, SQLx-style SQLite, and Better Auth.",
     version="1.0.0",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 # CORS configuration allowing credentials for session cookies

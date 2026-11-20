@@ -21,6 +21,7 @@ This is the **production architecture pattern**:
 4. Import directly into standard Python (or FastAPI) without subprocesses or socket overhead:
    ```python
    import export_extension
+
    print(export_extension.ping())
    ```
 

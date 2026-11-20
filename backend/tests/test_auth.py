@@ -1,15 +1,24 @@
 # backend/tests/test_auth.py
 import asyncio
+
 import pytest
-from backend.app.auth.crypto import hash_password, verify_password, sign_cookie_token, unsign_cookie_token
-from backend.app.auth.service import sign_up_email, sign_in_email, validate_session, sign_out
+
+from backend.app.auth.crypto import (
+    hash_password,
+    sign_cookie_token,
+    unsign_cookie_token,
+    verify_password,
+)
+from backend.app.auth.service import sign_in_email, sign_out, sign_up_email, validate_session
 from backend.app.db.migrator import run_migrations
+
 
 @pytest.fixture(autouse=True)
 def setup_test_db(tmp_path, monkeypatch):
     test_db = str(tmp_path / "auth_test.db")
     monkeypatch.setattr("backend.app.config.settings.DATABASE_PATH", test_db)
     asyncio.run(run_migrations(test_db))
+
 
 def test_argon2id_hashing():
     password = "SuperSecurePassword123!"
@@ -19,6 +28,7 @@ def test_argon2id_hashing():
     assert hashed.startswith("$argon2id$")
     assert verify_password(password, hashed) is True
     assert verify_password("WrongPassword!", hashed) is False
+
 
 def test_hmac_cookie_tampering_protection():
     token = "session_token_xyz_12345"
@@ -34,6 +44,7 @@ def test_hmac_cookie_tampering_protection():
 
     # Missing signature separator
     assert unsign_cookie_token("invalid_cookie_without_dot") is None
+
 
 @pytest.mark.asyncio
 async def test_auth_service_lifecycle():

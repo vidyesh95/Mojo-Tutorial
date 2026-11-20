@@ -1,6 +1,8 @@
 # backend/tests/test_sql_queries.py
 import pytest
+
 from backend.app.db.verifier import verify_queries
+
 
 @pytest.mark.asyncio
 async def test_all_sql_queries_pass_sqlite_verifier(tmp_path):
