@@ -1,6 +1,24 @@
-# If you prefer the allow list template instead of the deny list, see community template:
-# https://github.com/github/gitignore/blob/main/community/Python/JupyterNotebooks.gitignore
-#
-# Binaries for programs and plugins
-*.trunk
-*.vscode
+# Python & virtual environments
+.venv/
+__pycache__/
+*.pyc
+
+# Mojo cache & compiled libraries
+__mojocache__/
+.mojo_cache/
+*.so
+*.dylib
+*.o
+*.bin
+*.out
+
+# SQLite databases
+*.db
+*.db-wal
+*.db-shm
+
+# Environment & editor
+.env
+.DS_Store
+.vscode/
+.idea/
