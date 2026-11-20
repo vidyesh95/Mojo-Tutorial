@@ -42,11 +42,37 @@ async def lifespan(app: FastAPI):
     yield
 
 
+openapi_tags = [
+    {
+        "name": "Health & Diagnostics",
+        "description": "Liveness and readiness probes verifying database pool health and native Mojo shared library status.",
+    },
+    {
+        "name": "Better Auth",
+        "description": "Authentication endpoints compatible with Better Auth: Argon2id password hashing, session rotation, and signed HttpOnly cookies.",
+    },
+    {
+        "name": "Domain Items & Mojo Compute",
+        "description": "Protected domain CRUD operations and high-performance SIMD batch calculations executed natively by compiled Mojo code.",
+    },
+]
+
 app = FastAPI(
     title="Mojo + FastAPI Production Backend",
-    description="Full-stack backend combining Systems Mojo SIMD computing, SQLx-style SQLite, and Better Auth.",
+    description="""
+## Modern Mojo 🔥 + FastAPI + SQLx-Style SQLite + Better Auth
+
+A high-performance backend architecture combining:
+- **Systems Mojo**: Compiled native `.so` CPython extensions running hardware SIMD vector operations.
+- **FastAPI**: Async ASGI HTTP routing, dependency injection, and automatic interactive documentation.
+- **SQLx-Style SQLite**: Raw parameterized SQL queries, explicit sequential migrations, and pre-flight query validation.
+- **Better Auth**: 4-table relational schema (`user`, `session`, `account`, `verification`) with Argon2id password security and HMAC-SHA256 signed session cookies.
+    """,
     version="1.0.0",
     lifespan=lifespan,
+    openapi_tags=openapi_tags,
+    docs_url="/docs",
+    redoc_url="/redoc",
 )
 
 # CORS configuration allowing credentials for session cookies
